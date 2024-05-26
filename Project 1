@@ -1,59 +1,88 @@
-1. Create the counttotalworkinhours table:
+TASK : Create a stored procedure to get the number of hours between two dates having a DateTime
+       format. You should exclude all Sundays and 1st and 2nd Saturdays if it comes within the date
+       range. If either of the input dates are Sunday or the 1st or 2nd Saturday, then include that
+       particular date too. Stored procedure will have two input parameters - Start_Date and
+       End_Date.
+       Execute your stored procedure only for the below dates and store the result in a table
+       named counttotalworkinhours in the below format.
 
- CREATE TABLE counttotalworkinhours (
-    START_DATE DATETIME,
-    END_DATE DATETIME,
-    NO_OF_HOURS INT
- );
+       Sample input parameters.
+       START_DATE END_DATE
+       2023-07-12 2023-07-13
+       2023-07-01 2023-07-17
 
-2. Create the stored procedure:
+       Sample Output
+       START_DATE END_DATE NO_OF_HOURS
+       2023-07-01 2023-07-17 288
+       2023-07-12 2023-07-13 24
 
- CREATE PROCEDURE CalculateWorkingHours
-    @Start_Date DATETIME,
-    @End_Date DATETIME
- AS
- BEGIN
-    DECLARE @current_date DATETIME;
-    DECLARE @total_hours INT;
-    SET @total_hours = 0;
-    SET @current_date = @Start_Date;
     
-    WHILE @current_date <= @End_Date
-    BEGIN
-        IF NOT (
-            (DATEPART(dw, @current_date) = 1) OR  -- Sunday
-            (DATEPART(dw, @current_date) = 7 AND DATEPART(day, @current_date) BETWEEN 1 AND 7) OR  -- 1st Saturday
-            (DATEPART(dw, @current_date) = 7 AND DATEPART(day, @current_date) BETWEEN 8 AND 14)  -- 2nd Saturday
-        )
-        BEGIN
-            SET @total_hours = @total_hours + 24;
-        END
-        ELSE
-        BEGIN
-            -- Include if the current_date is either Sunday or 1st/2nd Saturday and it is one of the input dates
-            IF (@current_date = @Start_Date OR @current_date = @End_Date)
-            BEGIN
-                SET @total_hours = @total_hours + 24;
-            END
-        END
-        -- Move to the next day
-        SET @current_date = DATEADD(day, 1, @current_date);
-    END
-    
-    -- Insert the result into the table
-    INSERT INTO counttotalworkinhours (START_DATE, END_DATE, NO_OF_HOURS)
-    VALUES (@Start_Date, @End_Date, @total_hours);
-END;
+**_SOLUTION_**
+
+Step 1. Create the counttotalworkinhours table:
+
+                   CREATE TABLE counttotalworkinhours (
+                      START_DATE DATETIME,
+                      END_DATE DATETIME,
+                      NO_OF_HOURS INT
+                   );
+
+Step 2. Create the stored procedure:
+
+               CREATE PROCEDURE CalculateWorkingHours
+                  @Start_Date DATETIME,
+                  @End_Date DATETIME
+               AS
+               BEGIN
+                  DECLARE @current_date DATETIME;
+                  DECLARE @total_hours INT;
+                  SET @total_hours = 0;
+                  SET @current_date = @Start_Date;
+                  
+                  WHILE @current_date <= @End_Date
+                  BEGIN
+                      IF NOT (
+                          (DATEPART(dw, @current_date) = 1) OR  -- Sunday
+                          (DATEPART(dw, @current_date) = 7 AND DATEPART(day, @current_date) BETWEEN 1 AND 7) OR  -- 1st Saturday
+                          (DATEPART(dw, @current_date) = 7 AND DATEPART(day, @current_date) BETWEEN 8 AND 14)  -- 2nd Saturday
+                      )
+                      BEGIN
+                          SET @total_hours = @total_hours + 24;
+                      END
+                      ELSE
+                      BEGIN
+                          -- Include if the current_date is either Sunday or 1st/2nd Saturday and it is one of the input dates
+                          IF (@current_date = @Start_Date OR @current_date = @End_Date)
+                          BEGIN
+                              SET @total_hours = @total_hours + 24;
+                          END
+                      END
+                      -- Move to the next day
+                      SET @current_date = DATEADD(day, 1, @current_date);
+                  END
+                  
+                  -- Insert the result into the table
+                  INSERT INTO counttotalworkinhours (START_DATE, END_DATE, NO_OF_HOURS)
+                  VALUES (@Start_Date, @End_Date, @total_hours);
+              END;
 
 
-3. Execute the stored procedure for the given dates:
+Step 3. Execute the stored procedure for the given dates:
 
--- Execute for the first date range
-EXEC CalculateWorkingHours '2023-07-01', '2023-07-17';
+              -- Execute for the first date range
+              EXEC CalculateWorkingHours '2023-07-01', '2023-07-17';
+              
+              -- Execute for the second date range
+              EXEC CalculateWorkingHours '2023-07-12', '2023-07-13';
 
--- Execute for the second date range
-EXEC CalculateWorkingHours '2023-07-12', '2023-07-13';
+Step 4. Query the results:
 
-4. Query the results:
+             SELECT * FROM counttotalworkinhours;
 
-SELECT * FROM counttotalworkinhours;
+
+FINAL OUTPUT:
+
+            START_DATE             END_DATE               NO_OF_HOURS
+            2023-07-01 00:00:00    2023-07-17 00:00:00    336
+            2023-07-12 00:00:00    2023-07-13 00:00:00    48
+
